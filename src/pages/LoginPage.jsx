@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import LoginForm from "../components/auth/LoginForm"
+import LoginForm from "../components/auth/LoginForm";
+import api from "../api/axios";
 
 function LoginPage() {
 
@@ -13,6 +14,21 @@ function LoginPage() {
         setUser({ nickname: data.nickname, role: data.role });
     };
 
+    const handleLogout = async () => {
+
+        try {
+
+            await api.post("/api/users/logout");
+        } catch (err) {
+
+            console.error("로그아웃 오류: ", err);
+        } finally {
+
+            localStorage.removeItem("accessToken");
+            setUser(null);
+        }
+    };
+
     if (user) {
 
         return (
@@ -20,6 +36,7 @@ function LoginPage() {
             <div>
                 <h2>환영합니다, {user.nickname}님!</h2>
                 <p>등급: {user.role}</p>
+                <button onClick={handleLogout}>로그아웃</button>
             </div>
         );
     }
