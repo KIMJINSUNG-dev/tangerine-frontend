@@ -1,25 +1,17 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
 
 function App() {
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    axios.get("http://localhost:8080/api/test")
-      .then(response => {
-        setMessage(response.data);
-      })
-      .catch(error => {
-        console.error("API 호출 실패:", error);
-        setMessage("연결 실패");
-      });
-  }, []);
 
   return (
-    <div>
-      <h1>Tangerine</h1>
-      <p>{message}</p>
-    </div>
+
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
