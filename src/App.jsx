@@ -5,6 +5,7 @@ import DocumentListPage from "./pages/wiki/DocumentListPage";
 import DocumentDetailPage from "./pages/wiki/DocumentDetailPage";
 import DocumentCreatePage from "./pages/wiki/DocumentCreatePage";
 import DocumentEditPage from "./pages/wiki/DocumentEditPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
 
@@ -14,10 +15,18 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/wiki/type/:typeId" element={<DocumentListPage />}></Route>
-        <Route path="/wiki/documents/new" element={<DocumentCreatePage />}></Route>
-        <Route path="/wiki/documents/:id" element={<DocumentDetailPage />}></Route>
-        <Route path="/wiki/documents/:id/edit" element={<DocumentEditPage />}></Route>
+        <Route path="/wiki/type/:typeId" element={<DocumentListPage />} />
+        <Route path="/wiki/documents/new" element={
+          <ProtectedRoute>
+            <DocumentCreatePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/wiki/documents/:id" element={<DocumentDetailPage />} />
+        <Route path="/wiki/documents/:id/edit" element={
+          <ProtectedRoute>
+            <DocumentEditPage />
+          </ProtectedRoute>
+        } />
       </Routes>
     </BrowserRouter>
   );
