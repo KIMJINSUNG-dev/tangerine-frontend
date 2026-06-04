@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { getComments, createComment, deleteComment } from "../../api/postApi";
+import { useAuth } from "../../hooks/useAuth";
 
 function CommentSection({ postId }) {
 
+    const { isAdmin, isLoggedIn, userNickname } = useAuth();
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState("");
     const [error, setError] = useState("");
@@ -58,43 +60,54 @@ function CommentSection({ postId }) {
 
             {error && <p style={{ color: "red" }}>{error}</p>}
 
-            {comments.map((comment) => (
+            {comments.map((comment) => {
 
-                <div
-                    key={comment.id}
-                    style={{
-                        borderBottom: "1px solid #eee",
-                        padding: "12px 0",
-                    }}
-                >
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <span style={{ fontWeight: "500" }}>{comment.author}</span>
-                        <div style={{ display: "flex", gap: "8px", fontSize: "14px" }}>
-                            <span style={{ color: "#666" }}>
-                                {new Date(comment.createdAt).toLocaleDateString()}
-                            </span>
-                            <button
-                                onClick={() => handleDelete(comment.id)}
-                                style={{ color: "red", border: "none", background: "none", cursor: "pointer" }}
-                            >
-                                삭제
-                            </button>
+                const canDelete = isAdmin || comment.author === userNickname;
+
+                return (
+
+                    <div
+                        key={comment.id}
+                        style={{
+                            borderBottom: "1px solid #eee",
+                            padding: "12px 0",
+                        }}
+                    >
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <span style={{ fontWeight: "500" }}>{comment.author}</span>
+                            <div style={{ display: "flex", gap: "8px", fontSize: "14px" }}>
+                                <span style={{ color: "#666" }}>
+                                    {new Date(comment.createdAt).toLocaleDateString()}
+                                </span>
+                                {canDelete && (
+
+                                    <button
+                                        onClick={() => handleDelete(comment.id)}
+                                        style={{ color: "red", border: "none", background: "none", cursor: "pointer" }}
+                                    >
+                                        삭제
+                                    </button>
+                                )}
+                            </div>
                         </div>
+                        <p style={{ margin: "8px 0 0 0" }}>{comment.content}</p>
                     </div>
-                    <p style={{ margin: "8px 0 0 0" }}>{comment.content}</p>
-                </div>
-            ))}
+                );
+            })}
 
-            <form onSubmit={handleSubmit} style={{ marginTop: "16px" }}>
-                <textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="댓글을 입력하세요"
-                    rows={3}
-                    style={{ width: "100%", marginBottom: "8px" }}
-                />
-                <button type="submit">댓글 작성</button>
-            </form>
+            {isLoggedIn && (
+
+                <form onSubmit={handleSubmit} style={{ marginTop: "16px" }}>
+                    <textarea
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        placeholder="댓글을 입력하세요"
+                        rows={3}
+                        style={{ width: "100%", marginBottom: "8px" }}
+                    />
+                    <button type="submit">댓글 작성</button>
+                </form>
+            )}
         </div>
     );
 }

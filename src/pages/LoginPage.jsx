@@ -11,6 +11,8 @@ function LoginPage() {
     const handleLoginSuccess = (data) => {
 
         localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("userRole", data.role);
+        localStorage.setItem("userNickname", data.nickname);
         setUser({ nickname: data.nickname, role: data.role });
     };
 
@@ -25,6 +27,8 @@ function LoginPage() {
         } finally {
 
             localStorage.removeItem("accessToken");
+            localStorage.removeItem("userRole");
+            localStorage.removeItem("userNickname");
             setUser(null);
         }
     };

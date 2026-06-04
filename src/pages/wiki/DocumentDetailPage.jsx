@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getDocument, deleteDocument } from "../../api/documentApi";
 import DocumentFieldView from "../../components/wiki/DocumentFieldView";
+import { useAuth } from "../../hooks/useAuth";
 
 function DocumentDetailPage() {
 
     const { id } = useParams();
     const navigate = useNavigate();
+    const { isAdmin, isLoggedIn } = useAuth();
     const [document, setDocuments] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -58,12 +60,18 @@ function DocumentDetailPage() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <h1 style={{ margin: "0 0 8px 0" }}>{document.title}</h1>
                 <div style={{ display: "flex", gap: "8px" }}>
-                    <button onClick={() => navigate(`/wiki/documents/${id}/edit`)}>
-                        편집
-                    </button>
-                    <button onClick={handleDelete} style={{ color: "red" }}>
-                        삭제
-                    </button>
+                    {isLoggedIn && (
+
+                        <button onClick={() => navigate(`/wiki/documents/${id}/edit`)}>
+                            편집
+                        </button>
+                    )}
+                    {isAdmin && (
+
+                        <button onClick={handleDelete} style={{ color: "red" }}>
+                            삭제
+                        </button>
+                    )}
                 </div>
             </div>
 
