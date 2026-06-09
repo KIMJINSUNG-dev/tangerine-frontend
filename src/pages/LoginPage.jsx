@@ -1,58 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginForm from "../components/auth/LoginForm";
-import api from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 
 function LoginPage() {
 
-    const [user, setUser] = useState(null);
+    const { isLoggedIn, login } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+
+        if (isLoggedIn) {
+    
+            navigate("/");
+        }
+    }, [isLoggedIn, navigate]);
 
     const handleLoginSuccess = (data) => {
 
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("userRole", data.role);
-        localStorage.setItem("userNickname", data.nickname);
-        setUser({ nickname: data.nickname, role: data.role });
+        login(data);
+        navigate("/");
     };
-
-    const handleLogout = async () => {
-
-        try {
-
-            await api.post("/api/users/logout");
-        } catch (err) {
-
-            console.error("로그아웃 오류: ", err);
-        } finally {
-
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("userRole");
-            localStorage.removeItem("userNickname");
-            setUser(null);
-        }
-    };
-
-    if (user) {
-
-        return (
-
-            <div>
-                <h2>환영합니다, {user.nickname}님!</h2>
-                <p>등급: {user.role}</p>
-                <button onClick={handleLogout}>로그아웃</button>
-            </div>
-        );
-    }
 
     return (
 
-        <div>
-            <LoginForm onLoginSuccess={handleLoginSuccess} />
-            <p>
+        <div className="max-w-md mx-auto py-16">
+            <h1 className="text-2xl font-bold mb-8 text-center">로그인</h1>
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-8 shadow-sm">
+                <LoginForm onLoginSuccess={handleLoginSuccess} />
                 계정이 없으신가요?{" "}
-                <button onClick={() => navigate("/signup")}>회원가입</button>
-            </p>
+                <button
+                    onClick={() => navigate("/signup")}
+                    className="text-orange-500 hover:text-orange-600 font-medium transition-colors"
+                >
+                    회원가입
+                </button>
+            </div>
         </div>
     );
 }

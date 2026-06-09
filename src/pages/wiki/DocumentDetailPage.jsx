@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getDocument, deleteDocument } from "../../api/documentApi";
 import DocumentFieldView from "../../components/wiki/DocumentFieldView";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../context/AuthContext";
 
 function DocumentDetailPage() {
 
@@ -46,36 +46,52 @@ function DocumentDetailPage() {
         }
     };
 
-    if (loading) return <p>불러오는 중...</p>;
-    if (error) return <p style={{ color: "red" }}>{error}</p>;
+    if (loading) return (
+
+        <p className="text-center text-gray-500 dark:text-gray-400 py-20">
+            불러오는 중...
+        </p>
+    );
+    if (error) return (
+    
+        <p className="text-center text-red-500 py-20">{error}</p>
+    );
     if (!document) return null;
 
     return (
 
-        <div style={{ maxWidth: "800px", margin: "0 auto", padding: "24px" }}>
-            <button onClick={() => navigate(-1)} style={{ marginBottom: "16px" }}>
+        <div className="max-w-3xl mx-auto">
+            <button
+                onClick={() => navigate(-1)}
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors mb-6 flex items-center gap-1"
+            >
                 ← 뒤로가기
             </button>
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h1 style={{ margin: "0 0 8px 0" }}>{document.title}</h1>
-                <div style={{ display: "flex", gap: "8px" }}>
+            <div className="flex items-start justify-between mb-2">
+                <h1 className="text-2xl font-bold">{document.title}</h1>
+                <div className="flex gap-2">
                     {isLoggedIn && (
 
-                        <button onClick={() => navigate(`/wiki/documents/${id}/edit`)}>
+                        <button
+                            onClick={() => navigate(`/wiki/documents/${id}/edit`)}
+                            className="px-3 py-1.5 rounded-lg text-sm border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        >
                             편집
                         </button>
                     )}
                     {isAdmin && (
 
-                        <button onClick={handleDelete} style={{ color: "red" }}>
+                        <button
+                            onClick={handleDelete}
+                            className="px-3 py-1.5 rounded-lg text-sm border border-red-200 dark:border-red-900 text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors">
                             삭제
                         </button>
                     )}
                 </div>
             </div>
 
-            <p style={{ color: "#666", fontSize: "14px", marginBottom: "24px" }}>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
                 유형: {document.typeName} | 작성자: {document.createBy} |
                 작성일: {new Date(document.createdAt).toLocaleDateString()}
             </p>

@@ -28,28 +28,38 @@ function LoginForm({ onLoginSuccess }) {
 
     return (
 
-        <form onSubmit={handleSubmit}>
-            <h2>로그인</h2>
-            <div>
-                <label>이메일</label>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    이메일
+                </label>
                 <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="이메일을 입력하세요"
-                />
+                    className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors"
+                    />
             </div>
-            <div>
-                <label>비밀번호</label>
+            <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    비밀번호
+                </label>
                 <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="비밀번호를 입력하세요"
+                    className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors"
                 />
             </div>
-            {error && <p style={{ color: "red"}}>{error}</p>}
-            <button type="submit">로그인</button>
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            <button
+                type="submit"
+                className="py-2 rounded-lg bg-orange-500 text-white font-medium hover:bg-orange-600 transition-colors"
+            >
+                로그인
+            </button>
         </form>
     );
 }

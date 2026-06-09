@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getPost, deletePost } from "../../api/postApi";
 import CommentSection from "./CommentSection";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../context/AuthContext";
 
 function PostDetailPage() {
 
@@ -45,44 +45,69 @@ function PostDetailPage() {
         }
     };
     
-    if (loading) return <p>불러오는 중...</p>;
-    if (error) return <p style={{ color: "red" }}>{error}</p>;
+    if (loading) return (
+        
+        <p className="text-center text-gray dark:text-gray-400 py-20">
+            불러오는 중...
+        </p>
+    );
+    if (error) return (
+     
+        <p className="text-center text-red-500 py-20">{error}</p>
+    );
     if (!post) return null;
     
     const canEdit = isAdmin || post?.author === userNickname;
 
     return (
-        <div style={{ maxWidth: "800px", margin: "0 auto", padding: "24px" }}>
-            <button onClick={() => navigate(-1)} style={{ marginBottom: "16px" }}>
+        <div className="max-w-3xl mx-auto">
+            <button
+                onClick={() => navigate(-1)}
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors mb-6"
+            >
                 ← 뒤로가기
             </button>
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <h1 style={{ margin: "0 0 8px 0" }}>{post.title}</h1>
+            <div className="flex items-start justify-between gap-4 mb-2">
+                <h1 className="text-2xl font-bold">{post.title}</h1>
                 {canEdit && (
 
-                    <div style={{ display: "flex", gap: "8px" }}>
-                        <button onClick={() => navigate(`/board/posts/${id}/edit`)}>편집</button>
-                        <button onClick={handleDelete} style={{ color: "red" }}>삭제</button>
+                    <div className="flex gap-2 shrink-0">
+                        <button
+                            onClick={() => navigate(`/board/posts/${id}/edit`)}
+                            className="px-3 py-1.5 rounded-lg text-sm border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        >
+                            편집
+                        </button>
+                        <button
+                            onClick={handleDelete}
+                            className="px-3 py-1.5 rounded-lg text-sm border border-red-200 dark:border-red-900 text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+                        >
+                            삭제
+                        </button>
                     </div>
                 )}
             </div>
 
-            <p style={{ color: "#666", fontSize: "14px", marginBottom: "8px" }}>
-                {post.author} | {new Date(post.createdAt).toLocaleDateString()} | 조회 {post.viewCount}
-            </p>
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
+                <span>{post.author}</span>
+                <span>·</span>
+                <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                <span>·</span>
+                <span>조회 {post.viewCount}</span>
+            </div>
 
             {post.taggedDocumentTitle && (
 
-                <p
-                    style={{ color: "#4a90e2", fontSize: "14px", cursor: "pointer", marginBottom: "16px" }}
+                <div
                     onClick={() => navigate(`/wiki/documents/${post.taggedDocumentId}`)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-950 text-orange-500 dark:text-orange-400 text-sm cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900 transition-colors mb-6"
                 >
                     관련 문서: #{post.taggedDocumentTitle}
-                </p>
+                </div>
             )}
 
-            <div style={{ borderTop: "1px solid #eee", paddingTop: "16px", lineHeight: "1.7" }}>
+            <div className="border-t border-gray-100 dark:border-gray-800 pt-6 text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
                 {post.content}
             </div>
 

@@ -48,22 +48,29 @@ function DocumentCreatePage() {
         }
     };
 
+    const inputClass = "px-4 py-2 rounded-lg border border-gray-200 darker:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors";
+
     return (
 
-        <div style={{ maxWidth: "800px", margin: "0 auto", padding: "24px" }}>
-            <button onClick={() => navigate(-1)} style={{ marginBottom: "16px" }}>
+        <div className="max-w-3xl mx-auto">
+            <button
+                onClick={() => navigate(-1)}
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors mb-6"
+            >
                 ← 뒤로가기
             </button>
 
-            <h1>새 문서 작성</h1>
+            <h1 className="text-2xl font-bold mb-8">새 문서 작성</h1>
 
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: "16px" }}>
-                    <label>문서 유형</label>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        문서 유형
+                    </label>
                     <select
                         value={typeId}
                         onChange={(e) => setTypeId(Number(e.target.value))}
-                        style={{ display: "block", marginTop: "4px"}}
+                        className={inputClass}
                     >
                         <option value={1}>수록곡 (SONG)</option>
                         <option value={2}>작곡가 (COMPOSER)</option>
@@ -71,49 +78,67 @@ function DocumentCreatePage() {
                     </select>
                 </div>
 
-                <div style={{ marginBottom: "16px" }}>
-                    <label>제목</label>
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        제목
+                    </label>
                     <input
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         required
-                        style={{ display: "block", marginTop: "4px", width: "100%" }}
+                        className={inputClass}
                     />
                 </div>
 
-                <div style={{ marginBottom: "16px" }}>
-                    <label>필드</label>
-                    {fieldInputs.map((field, index) => (
-                        <div key={index} style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-                            <input
-                                type="text"
-                                placeholder="필드명 (예: bpm)"
-                                value={field.key}
-                                onChange={(e) => handleFieldChange(index, "key", e.target.value)}
-                                style={{ width: "40%" }}
-                            />
-                            <input
-                                type="text"
-                                placeholder="값 (예: 155)"
-                                value={field.value}
-                                onChange={(e) => handleFieldChange(index, "value", e.target.value)}
-                                style={{ width: "40%" }}
-                            />
-                        </div>
-                    ))}
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        필드
+                    </label>
+                    <div className="flex flex-col gap-2">
+                        {fieldInputs.map((field, index) => (
+                            <div key={index} className="flex gap-2">
+                                <input
+                                    type="text"
+                                    placeholder="필드명 (예: bpm)"
+                                    value={field.key}
+                                    onChange={(e) => handleFieldChange(index, "key", e.target.value)}
+                                    className={`${inputClass} flex-1`}
+                                    />
+                                <input
+                                    type="text"
+                                    placeholder="값 (예: 155)"
+                                    value={field.value}
+                                    onChange={(e) => handleFieldChange(index, "value", e.target.value)}
+                                    className={`${inputClass} flex-1`}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveField(index)}
+                                    className="px-3 py-2 rounded-lg text-sm text-red-500 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+                                >
+                                    삭제
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                     <button
                         type="button"
                         onClick={handleAddField}
-                        style={{ marginTop: "8px"}}
+                        className="self-start text-sm text-orange-500 hover:text-orange-600 transition-colors"
                     >
                         + 필드 추가
                     </button>
                 </div>
 
-                {error && <p style={{ color: "red" }}>{error}</p>}
+                {error && <p className="text-sm text-red-500">{error}</p>}
 
-                <button type="submit">저장</button>
+                <button
+                    type="submit"
+                    className="py-2 rounded-lg bg-orange-500 text-white font-medium hover:bg-orange-600 transition-colors"
+                >
+                    저장
+                </button>
             </form>
         </div>
     );
