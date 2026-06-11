@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getDocumentsByType } from "../../api/documentApi";
 import DocumentCard from "../../components/wiki/DocumentCard";
 import { useAuth } from "../../context/AuthContext";
+import WikiSearch from "../../components/wiki/WikiSearch";
 
 function DocumentListPage() {
 
@@ -57,6 +58,9 @@ function DocumentListPage() {
                 <h1 className="text-2xl font-bold">
                     {typeLabel[typeId] || "문서 목록"}
                 </h1>
+                <div className="mb-6">
+                    <WikiSearch />
+                </div>
                 {isLoggedIn && (
 
                     <button

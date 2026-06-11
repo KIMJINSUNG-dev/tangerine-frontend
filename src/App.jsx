@@ -11,6 +11,8 @@ import PostListPage from "./components/board/PostListPage";
 import PostDetailPage from "./components/board/PostDetailPage";
 import PostCreatePage from "./components/board/PostCreatePage";
 import PostEditPage from "./components/board/PostEditPage";
+import HomePage from "./pages/HomePage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
 
@@ -41,6 +43,8 @@ function App() {
           <Route path="/board/posts/:id/edit" element={
             <ProtectedRoute><PostEditPage /></ProtectedRoute>
           } />
+          <Route path="/" element={<HomePage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Layout>
     </BrowserRouter>
