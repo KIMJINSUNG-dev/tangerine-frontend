@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getDocument, updateDocument } from "../../api/documentApi";
+import { getDocument, getTemplate, updateDocument } from "../../api/documentApi";
 
 function DocumentEditPage() {
 
     const { id } = useParams();
     const navigate = useNavigate();
     const [title, setTitle] = useState("");
-    const [fieldInputs, setFieldInputs] = useState([]);
+
+    // [수정] 자유 입력 배열 대신 템플릿 + 값 객체로 관리해요.
+    const [template, setTemplate] = useState([]);
+    const [fieldValues, setFieldValues] = useState({});
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -17,12 +21,15 @@ function DocumentEditPage() {
 
             try {
 
-                const response = await getDocument(id);
-                const doc = response.data;
+                const docResponse = await getDocument(id);
+                const doc = docResponse.data;
                 setTitle(doc.title);
-                setFieldInputs(
-                    Object.entries(doc.fields).map(([key, value]) => ({ key, value }))
-                );
+                setFieldValues(doc.fields || {});
+
+                // [추가] 문서의 유형(typeId)을 기준으로 그 유형의 템플릿을 가져와요.
+                // 방금 DocumentResponse에 typeId를 추가했기 때문에 가능해요.
+                const templateResponse = await getTemplate(doc.typeId);
+                setTemplate(templateResponse.data);
             } catch {
 
                 setError("문서를 불러오는 데 실패했어요.");
@@ -35,21 +42,9 @@ function DocumentEditPage() {
         fetchDocuments();
     }, [id]);
 
-    const handleFieldChange = (index, type, value) => {
+    const handleFieldChange = (fieldKey, value) => {
 
-        const updated = [...fieldInputs];
-        updated[index][type] = value;
-        setFieldInputs(updated);
-    };
-
-    const handleAddField = () => {
-
-        setFieldInputs([...fieldInputs, { key: "", value: "" }]);
-    };
-
-    const handelRemoveField = (index) => {
-
-        setFieldInputs(fieldInputs.filter((_, i) => i !== index));
+        setFieldValues((prev) => ({ ...prev, [fieldKey]: value }));
     };
 
     const handleSubmit = async (e) => {
@@ -57,19 +52,13 @@ function DocumentEditPage() {
         e.preventDefault();
         setError("");
 
-        const fields = {};
-        fieldInputs.forEach(({ key, value }) => {
-
-            if (key.trim()) fields[key.trim()] = value;
-        });
-
         try {
 
-            await updateDocument(id, { title, fields });
+            await updateDocument(id, { title, fields: fieldValues });
             navigate(`/wiki/documents/${id}`);
         } catch (err) {
 
-            setError("문서 수정에 실패했어요.");
+            setError(err.response?.data || "문서 수정에 실패했어요.");
         }
     };
 
@@ -111,45 +100,30 @@ function DocumentEditPage() {
                         className={inputClass}
                     />
                 </div>
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        필드
-                    </label>
-                    <div className="flex flex-col gap-2">
-                        {fieldInputs.map((field, index) => (
-                            <div key={index} className="flex gap-2">
+                
+                {template.length > 0 && (
+
+                    <div className="flex flex-col gap-4">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            필드
+                        </label>
+                        {template.map((field) => (
+                            <div key={field.fieldKey} className="flex flex-col gap-1">
+                                <label className="text-xs text-gray-500 dark:text-gray-400">
+                                    {field.fieldName}
+                                    {field.required && <span className="text-orange-500 ml-1">*</span>}
+                                </label>
                                 <input
-                                    type="text"
-                                    placeholder="필드명 (예: bpm)"
-                                    value={field.key}
-                                    onChange={(e) => handleFieldChange(index, "key", e.target.value)}
-                                    className={`${inputClass} flex-1`}
-                                    />
-                                <input
-                                    type="text"
-                                    placeholder="값 (예: 155)"
-                                    value={field.value}
-                                    onChange={(e) => handleFieldChange(index, "value", e.target.value)}
-                                    className={`${inputClass} flex-1`}
+                                    type={field.fieldType === "NUMBER" ? "number" : "text"}
+                                    value={fieldValues[field.fieldKey] || ""}
+                                    onChange={(e) => handleFieldChange(field.fieldKey), e.target.value}
+                                    required={field.required}
+                                    className={inputClass}
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => handelRemoveField(index)}
-                                    className="px-3 py-2 rounded-lg text-sm text-red-500 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
-                                >
-                                    삭제
-                                </button>
                             </div>
                         ))}
                     </div>
-                    <button
-                        type="button"
-                        onClick={handleAddField}
-                        className="self-start text-sm text-orange-500 hover:text-orange-600 transition-colors"
-                    >
-                        + 필드 추가
-                    </button>
-                </div>
+                )}
                 
                 {error && <p className="text-sm text-red-500">{error}</p>}
 

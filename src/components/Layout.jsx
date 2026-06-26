@@ -64,7 +64,7 @@ function Layout({ children }) {
                         </span>
                         {isAdmin && (
                             <span
-                                onClick={() => navigate("/admin")}
+                                onClick={() => navigate("/admin/templates")}
                                 className="cursor-pointer text-gray-600 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
                             >
                                 관리자
@@ -147,7 +147,7 @@ function Layout({ children }) {
                         {isAdmin && (
 
                             <span
-                                onClick={() => handleNavigate("/admin")}
+                                onClick={() => handleNavigate("/admin/templates")}
                                 className="cursor-pointer text-sm text-gray-600 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
                             >
                                 관리자

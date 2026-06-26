@@ -13,6 +13,8 @@ import PostCreatePage from "./components/board/PostCreatePage";
 import PostEditPage from "./components/board/PostEditPage";
 import HomePage from "./pages/HomePage";
 import NotFoundPage from "./pages/NotFoundPage";
+import AdminRoute from "./components/AdminRoute";
+import AdminTemplatePage from "./pages/admin/AdminTemplatePage";
 
 function App() {
 
@@ -42,6 +44,9 @@ function App() {
           <Route path="/board/posts/:id" element={<PostDetailPage />} />
           <Route path="/board/posts/:id/edit" element={
             <ProtectedRoute><PostEditPage /></ProtectedRoute>
+          } />
+          <Route path="/admin/templates" element={
+            <AdminRoute><AdminTemplatePage /></AdminRoute>
           } />
           <Route path="/" element={<HomePage />} />
           <Route path="*" element={<NotFoundPage />} />

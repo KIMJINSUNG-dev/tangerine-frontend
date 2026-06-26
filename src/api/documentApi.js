@@ -15,5 +15,8 @@ export const updateDocument = (id, data) =>
 export const deleteDocument = (id) =>
     api.delete(`/api/documents/${id}`);
 
+export const getTemplate = (typeId) =>
+    api.get(`/api/documents/type/${typeId}/template`);
+
 export const searchDocuments = (keyword) =>
     api.get("/api/documents/search", { params: { keyword, size: 10 } });
