@@ -8,6 +8,13 @@ import { useAuth } from "../../context/AuthContext";
 
 const typeLabel: Record<string, string> = { "1": "수록곡", "2": "작곡가", "3": "게임 타이틀" };
 
+const documentTypes = [
+
+    { id: "1", label: "수록곡" },
+    { id: "2", label: "작곡가" },
+    { id: "3", label: "게임 타이틀" },
+];
+
 function DocumentListPage() {
     
     const { typeId } = useParams<{typeId: string}>();
@@ -36,6 +43,14 @@ function DocumentListPage() {
         setCurrentPage(0);
     };
 
+    const handleTypeChange = (newTypeId: string) => {
+
+        navigate(`/wiki/type/${newTypeId}`);
+        setCurrentPage(0);
+        setSearchInput("");
+        setAppliedKeyword("");
+    };
+
     if (isLoading) {
 
         return <p className="text-center text-gray-500 dark:text-gray-400 py-20">불러오는 중...</p>;
@@ -60,9 +75,28 @@ function DocumentListPage() {
                     </button>
                 )}
 
-                <div className="mb-6">
-                    <WikiSearch />
-                </div>
+            </div>
+
+            <div className="flex gap-1 mb-6 border-b border-gray-200 dark:border-gray-800">
+                {documentTypes.map((type) => (
+
+                    <button
+                        key={type.id}
+                        onClick={() => handleTypeChange(type.id)}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+
+                            typeId === type.id
+                                ? "border-orange-500 text-orange-500"
+                                : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                        }`}
+                    >
+                        {type.label}
+                    </button>
+                ))}
+            </div>
+
+            <div className="mb-6">
+                <WikiSearch />
             </div>
 
             <form onSubmit={handleSearch} className="flex gap-2 mb-6">
