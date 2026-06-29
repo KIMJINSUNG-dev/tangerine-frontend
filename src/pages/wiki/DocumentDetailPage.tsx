@@ -1,62 +1,48 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getDocument, deleteDocument } from "../../api/documentApi";
 import DocumentFieldView from "../../components/wiki/DocumentFieldView";
 import { useAuth } from "../../context/AuthContext";
 
 function DocumentDetailPage() {
 
-    const { id } = useParams();
+    const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const { isAdmin, isLoggedIn } = useAuth();
-    const [document, setDocuments] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const documentId = Number(id);
 
-    useEffect(() => {
+    const { data: document, isLoading, isError } = useQuery({
 
-        const fetchDocuments = async () => {
+        queryKey: ["document", documentId],
+        queryFn: () => getDocument(documentId).then((res) => res.data),
+    });
 
-            try {
+    const deleteMutation = useMutation({
 
-                const response = await getDocument(id);
-                setDocuments(response.data);
-            } catch (err) {
+        mutationFn: () => deleteDocument(documentId),
+        onSuccess: () => {
 
-                setError("문서를 불러오는 데 실패했어요.");
-            } finally {
+            queryClient.invalidateQueries({ queryKey: ["documents"] });
+            navigate(-1);
+        },
+    });
 
-                setLoading(false);
-            }
-        };
-
-        fetchDocuments();
-    }, [id]);
-
-    const handleDelete = async () => {
+    const handleDelete = () => {
 
         if (!window.confirm("정말 삭제하시겠어요?")) return;
-        try {
+        deleteMutation.mutate();
+    }
 
-            await deleteDocument(id);
-            navigate(-1);
-        } catch (err) {
+    if (isLoading) {
 
-            setError("삭제에 실패했어요.");
-        }
-    };
+        return <p className="text-center text-gray-500 dark:text-gray-400 py-20">불러오는 중...</p>;
+    }
 
-    if (loading) return (
+    if (isError || !document) {
 
-        <p className="text-center text-gray-500 dark:text-gray-400 py-20">
-            불러오는 중...
-        </p>
-    );
-    if (error) return (
-    
-        <p className="text-center text-red-500 py-20">{error}</p>
-    );
-    if (!document) return null;
+        return <p className="text-center text-red-500 py-20">문서를 불러오는 데 실패했어요.</p>;
+    }
 
     return (
 
@@ -74,7 +60,7 @@ function DocumentDetailPage() {
                     {isLoggedIn && (
 
                         <button
-                            onClick={() => navigate(`/wiki/documents/${id}/edit`)}
+                            onClick={() => navigate(`/wiki/documents/${documentId}/edit`)}
                             className="px-3 py-1.5 rounded-lg text-sm border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                         >
                             편집
@@ -92,8 +78,7 @@ function DocumentDetailPage() {
             </div>
 
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-                유형: {document.typeName} | 작성자: {document.createBy} |
-                작성일: {new Date(document.createdAt).toLocaleDateString()}
+                {document.typeName} · {document.createdBy} · {new Date(document.createdAt).toLocaleDateString()}
             </p>
 
             <DocumentFieldView fields={document.fields} />

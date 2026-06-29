@@ -1,7 +1,12 @@
 import { Navigate } from "react-router-dom";
+import type { ReactNode } from "react";
 import { useAuth } from "../context/AuthContext";
 
-function ProtectedRoute({ children }) {
+interface ProtectedRouteProps {
+
+    children: ReactNode;
+}
+function ProtectedRoute({ children }: ProtectedRouteProps) {
 
     const { isLoggedIn } = useAuth();
 

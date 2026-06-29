@@ -1,8 +1,14 @@
 import { useNavigate } from "react-router-dom";
+import type { Document } from "../../types";
 
-function DocumentCard({ document }) {
+interface DocumentCardProps {
+
+    document: Document;
+}
+function DocumentCard({ document }: DocumentCardProps) {
 
     const navigate = useNavigate();
+
     return (
 
         <div

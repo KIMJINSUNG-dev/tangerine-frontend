@@ -1,22 +1,27 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { searchDocuments } from "../../api/documentApi";
+import type { Document } from "../../types";
 
 function WikiSearch() {
 
     const navigate = useNavigate();
-    const [keyword, setKeyword] = useState("");
-    const [results, setResults] = useState([]);
-    const [isOpen, setIsOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const wrapperRef = useRef(null);
+    const [keyword, setKeyword] = useState<string>("");
+    const [results, setResults] = useState<Document[]>([]);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
+    // [추가] DOM 요소를 가리키는 ref의 타입. 처음엔 아무것도 안 가리키니 null
+    const wrapperRef = useRef<HTMLDivElement>(null);
 
     // 외부 클릭 시 드롭다운 닫기
     useEffect(() => {
 
-        const handleClickOutside = (e) => {
+        // [추가] 브라우저 MouseEvent 타입 명시
+        const handleClickOutside = (e: MouseEvent) => {
 
-            if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+            // [추가] e.target은 기본 타입이 EventTarget이라 Node로 단언해줘야
+            // wrapperRef.current.contains()에 넘길 수 있어요.
+            if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
 
                 setIsOpen(false);
             }
@@ -35,27 +40,38 @@ function WikiSearch() {
             return;
         }
 
+        // [추가] 이전 위키 디버깅에서 배운 경쟁 상태 방어 패턴을
+        // 디바운싱 로직에도 같이 적용했어요. (필수는 아니지만 안전해요)
+        let isCanceled = false;
+
         const timer = setTimeout(async () => {
 
             try {
 
                 setLoading(true);
                 const response = await searchDocuments(keyword);
-                setResults(response.data.content);
-                setIsOpen(true);
+                if (!isCanceled) {
+
+                    setResults(response.data.content);
+                    setIsOpen(true);
+                }
             } catch (err) {
 
                 console.error("검색 실패: ", err);
             } finally {
 
-                setLoading(false);
+                if (!isCanceled) setLoading(false);
             }
         }, 300);
 
-        return () => clearTimeout(timer);
+        return () => {
+            
+            isCanceled = true;
+            clearTimeout(timer);
+        }
     }, [keyword]);
 
-    const handleSelect = (id) => {
+    const handleSelect = (id: number) => {
 
         navigate(`/wiki/documents/${id}`);
         setKeyword("");

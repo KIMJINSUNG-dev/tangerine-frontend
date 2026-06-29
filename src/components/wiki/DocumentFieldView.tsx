@@ -1,6 +1,12 @@
-function DocumentFieldView({ fields }) {
+interface DocumentFieldViewProps {
 
-    if(!fields || Object.keys(fields).length === 0) {
+    fields: Record<string, string>;
+}
+
+function DocumentFieldView({ fields }: DocumentFieldViewProps) {
+
+    const entries = Object.entries(fields || {});
+    if(entries.length === 0) {
 
         return (
             
@@ -13,7 +19,7 @@ function DocumentFieldView({ fields }) {
     return (
 
         <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
-            {Object.entries(fields).map(([key, value], index) => (
+            {entries.map(([key, value], index) => (
                 <div
                     key={key}
                     className={`flex px-5 py-3 ${

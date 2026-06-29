@@ -1,81 +1,66 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import type { AxiosError } from "axios";
 import { createDocument, getTemplate } from "../../api/documentApi";
+import type { DocumentCreateRequest } from "../../types";
 
 function DocumentCreatePage() {
 
     const navigate = useNavigate();
-    const [typeId, setTypeId] = useState(1);
-    const [title, setTitle] = useState("");
-    
-    // [수정] 자유 입력 배열(fieldInputs) 대신, 관리자가 정의해둔
-    // 템플릿 목록을 받아와서 그대로 폼에 그려요.
-    const [template, setTemplate] = useState([]);
+    const [typeId, setTypeId] = useState<number>(1);
+    const [title, setTitle] = useState<string>("");
+    const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
 
-    // [수정] { 필드키: 입력값 } 형태의 객체로 관리해요.
-    const [fieldValues, setFieldValues] = useState({});
+    /**
+     * [설명] 이전 .jsx 버전에서는 typeId가 바뀔 때마다 직접
+     * useEffect + isCancelled 방어 코드로 "오래된 응답이 화면을
+     * 덮어쓰는" 경쟁 상태를 막아야 했어요. (DB 중복 데이터 버그와
+     * 겹쳐서 한참 헤맸던 그 부분이에요)
+     *
+     * useQuery로 바꾸면 그 방어 코드가 통째로 필요 없어져요.
+     * queryKey에 typeId를 포함시켜두기만 하면, typeId가 바뀌는 순간
+     * React Query가 "이전 typeId 요청은 이제 의미 없다"는 걸 자동으로
+     * 인식하고 최신 typeId의 응답만 반영해줘요.
+     */
+    const { data: template = [] } = useQuery({
 
-    const [error, setError] = useState("");
+        queryKey: ["template", typeId],
+        queryFn: () => getTemplate(typeId).then((res) => res.data),
+    });
 
-    // [추가] 유형(typeId)이 바뀔 때마다 그 유형의 템플릿을 다시 조회해요.
-    useEffect(() => {
-        
-        // [추가] 이 effect 실행 시점에만 유효한 변수예요.
-        // 클로저로 캡처되어서, 나중에 effect가 재실행되거나 끝나도
-        // 이 특정 실행 안에서는 값이 안 바뀌어요.
-        let isCancelled = false;
-        
-        const fetchTemplate = async () => {
+    const createMutation = useMutation({
 
-            try {
+        mutationFn: (data: DocumentCreateRequest) => createDocument(data),
+        onSuccess: (response) => {
 
-                const response = await getTemplate(typeId);
+            navigate(`/wiki/documents/${response.data.id}`);
+        },
+    });
 
-                // [추가] 응답이 왔을 때, 혹시 그 사이에 typeId가 또 바뀌어서
-                // 이 effect가 "취소"된 상태라면 state를 업데이트하지 않아요.
-                if (!isCancelled) {
-                
-                    setTemplate(response.data);
-                    setFieldValues({});
-                }
-            } catch (err) {
+    const handleTypeChange = (newTypeId: number) => {
 
-                setError("필드 정보를 불러오는 데 실패했어요.");
-            }
-        };
-        fetchTemplate();
+        setTypeId(newTypeId);
+        setFieldValues({});
+    };
 
-        // [추가] cleanup 함수: typeId가 바뀌어서 이 effect가 다시 실행되기
-        // 직전에 React가 자동으로 호출해줘요. 여기서 isCancelled를 true로
-        // 바꿔두면, 위에서 await 하던 "오래된" 요청의 응답이 늦게 와도
-        // if (!isCancelled) 체크에 걸려서 무시돼요.
-        return () => {
-            
-            isCancelled = true;
-        };
-    }, [typeId]);
-
-    const handleFieldChange = (fieldKey, value) => {
+    const handleFieldChange = (fieldKey: string, value: string) => {
 
         setFieldValues((prev) => ({ ...prev, [fieldKey]: value }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
 
         e.preventDefault();
-        setError("");
-        try {
-
-            const response = await createDocument({ typeId, title, fields: fieldValues});
-            navigate(`/wiki/documents/${response.data.id}`);
-        } catch (err) {
-
-            // [수정] 백엔드가 "정의되지 않은 필드입니다" 같은 구체적 메시지를
-            // 본문에 그대로 담아 보내주므로(GlobalExceptionHandler 덕분에),
-            // 그 메시지를 화면에 그대로 보여줘요.
-            setError(err.response?.data || "문서 작성에 실패했어요.");
-        }
+        createMutation.mutate({ typeId, title, fields: fieldValues});
     };
+
+    // [추가] GlobalExceptionHandler가 본문에 그대로 담아 보내주는
+    // 구체적인 오류 메시지("정의되지 않은 필드입니다: ...")를 꺼내요.
+    // AxiosError<string>: 이 요청의 에러 응답 본문이 문자열이라는 의미
+    const errorMessage = createMutation.error 
+        ? (createMutation.error as AxiosError<string>).response?.data || "문서 작성에 실패했어요."
+        : null;
 
     const inputClass = "px-4 py-2 rounded-lg border border-gray-200 darker:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors";
 
@@ -98,7 +83,7 @@ function DocumentCreatePage() {
                     </label>
                     <select
                         value={typeId}
-                        onChange={(e) => setTypeId(Number(e.target.value))}
+                        onChange={(e) => handleTypeChange(Number(e.target.value))}
                         className={inputClass}
                     >
                         <option value={1}>수록곡 (SONG)</option>
@@ -150,10 +135,11 @@ function DocumentCreatePage() {
                     </div>
                 )}
 
-                {error && <p className="text-sm text-red-500">{error}</p>}
+                {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}
 
                 <button
                     type="submit"
+                    disabled={createMutation.isPending}
                     className="py-2 rounded-lg bg-orange-500 text-white font-medium hover:bg-orange-600 transition-colors"
                 >
                     저장
