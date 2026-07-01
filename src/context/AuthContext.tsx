@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 // [추가] ReactNode는 타입이라 import type, LoginResponse/AuthState는 우리가 만든 타입
 import type { ReactNode } from "react";
 import type { LoginResponse, AuthState } from "../types";
@@ -29,40 +29,66 @@ interface AuthProviderProps {
     children: ReactNode;
 }
 
+const AUTH_KEY = "auth";
+
 export function AuthProvider({ children }: AuthProviderProps) {
 
-    const [auth, setAuth] = useState<AuthState>(() => ({
+    const [auth, setAuth] = useState<AuthState>(() => {
 
-        accessToken: localStorage.getItem("accessToken"),
-        userRole: localStorage.getItem("role"),
-        userNickname: localStorage.getItem("nickname"),
-    }));
+        const stored = localStorage.getItem("AUTH_KEY");
+        if (stored) {
+
+            return JSON.parse(stored) as AuthState;
+        }
+        return { accessToken: null, userRole: null, userNickname: null };
+    });
+
+    // [추가] 다른 탭에서 localStorage가 변경될 때 AuthContext state를 동기화해요.
+    // storage 이벤트는 "변경을 일으킨 탭 자신"에게는 발생하지 않고,
+    // "같은 origin의 다른 탭"에게만 발생하는 브라우저 Web API예요.
+    // 그래서 탭 B에서 로그인하면 탭 A가 이 이벤트를 받아서
+    // 자신의 AuthContext state를 새로 갱신해요.
+    useEffect(() => {
+
+        const handleStorageChange = (e: StorageEvent) => {
+
+            if (e.key === AUTH_KEY) {
+                
+                if (e.newValue) {
+
+                    setAuth(JSON.parse(e.newValue) as AuthState);
+                } else {
+
+                    // 로그아웃 시 e.newValue가 null이에요
+                    setAuth({ accessToken: null, userRole: null, userNickname: null });
+                }
+            }
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+
+        // cleanup: 컴포넌트가 언마운트될 때 이벤트 리스너를 제거해요.
+        // 제거하지 않으면 컴포넌트가 사라진 뒤에도 이벤트가 계속 감지돼요.
+        return () => window.removeEventListener("storage", handleStorageChange);
+    }, []);
 
     // [추가] data의 타입을 LoginResponse로 명시
     const login = (data: LoginResponse) => {
 
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("role", data.role);
-        localStorage.setItem("nickname", data.nickname);
-        setAuth({
+        const newAuth: AuthState = {
 
             accessToken: data.accessToken,
             userRole: data.role,
             userNickname: data.nickname,
-        });
+        };
+        localStorage.setItem(AUTH_KEY, JSON.stringify(newAuth));
+        setAuth(newAuth);
     };
 
     const logout = () => {
 
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("userRole");
-        localStorage.removeItem("userNickname");
-        setAuth({
-
-            accessToken: null,
-            userRole: null,
-            userNickname: null,
-        });
+        localStorage.removeItem(AUTH_KEY);
+        setAuth({ accessToken: null, userRole: null, userNickname: null });
     };
 
     const isLoggedIn = !!auth.accessToken;

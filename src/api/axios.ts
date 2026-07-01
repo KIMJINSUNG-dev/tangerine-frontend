@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import type { InternalAxiosRequestConfig } from "axios";
+import type { AuthState } from "../types";
 
 /**
  * [추가] axios의 요청 설정(config) 타입에 우리가 직접 쓰는 _retry
@@ -20,7 +21,8 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
 
-    const token = localStorage.getItem("accessToken");
+    const stored = localStorage.getItem("auth");
+    const token = stored ? (JSON.parse(stored) as { accessToken: string | null }).accessToken : null;
     if (token) {
 
         config.headers.Authorization = `Bearer ${token}`;
@@ -55,7 +57,11 @@ api.interceptors.response.use(
                 // [추가] <string>: 재발급 응답의 본문이 토큰 문자열 하나라는 의미
                 const response = await api.post<string>("/api/users/reissue");
                 const newAccessToken = response.data;
-                localStorage.setItem("accessToken", newAccessToken);
+                const stored = localStorage.getItem("auth");
+                const currentAuth = stored
+                    ? (JSON.parse(stored) as AuthState)
+                    : { accessToken: null, userRole: null, userNickname: null };
+                localStorage.setItem("auth", JSON.stringify({ ...currentAuth, accessToken: newAccessToken }));
                 originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                 return api(originalRequest);
             } catch (reissueError) {
