@@ -1,15 +1,21 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import type { ReactNode } from "react";
 import { useDarkMode } from "../hooks/useDarkMode";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
 
-function Layout({ children }) {
+interface LayoutProps {
+
+    children: ReactNode;
+}
+
+function Layout({ children }: LayoutProps) {
 
     const navigate = useNavigate();
     const { isDark, toggle } = useDarkMode();
     const { isLoggedIn, userNickname, isAdmin, logout } = useAuth();
-    const [menuOpen, setMenuOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState<boolean>(false);
 
     const handleLogout = async () => {
 
@@ -26,7 +32,7 @@ function Layout({ children }) {
         }
     };
 
-    const handleNavigate = (path) => {
+    const handleNavigate = (path: string) => {
 
         navigate(path);
         setMenuOpen(false);
