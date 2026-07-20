@@ -1,19 +1,11 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getDocumentsByType } from "../../api/documentApi";
+import { getDocumentsByType, getDocumentTypes } from "../../api/documentApi";
+import type { DocumentType } from "../../types";
 import DocumentCard from "../../components/wiki/DocumentCard";
 import WikiSearch from "../../components/wiki/WikiSearch";
 import { useAuth } from "../../context/AuthContext";
-
-const typeLabel: Record<string, string> = { "1": "수록곡", "2": "작곡가", "3": "게임 타이틀" };
-
-const documentTypes = [
-
-    { id: "1", label: "수록곡" },
-    { id: "2", label: "작곡가" },
-    { id: "3", label: "게임 타이틀" },
-];
 
 function DocumentListPage() {
     
@@ -26,6 +18,17 @@ function DocumentListPage() {
     const [appliedKeyword, setAppliedKeyword] = useState<string>("");
 
     const numericTypeId = Number(typeId);
+
+    const { data: documentTypes = [] } = useQuery({
+
+        queryKey: ["documentTypes"],
+        queryFn: () => getDocumentTypes().then((res) => res.data),
+    });
+
+    const currentTypeLabel = documentTypes.find(
+
+        (t) => t.id === numericTypeId
+    )?.name ?? "";
 
     const { data, isLoading, isError } = useQuery({
 
@@ -43,7 +46,7 @@ function DocumentListPage() {
         setCurrentPage(0);
     };
 
-    const handleTypeChange = (newTypeId: string) => {
+    const handleTypeChange = (newTypeId: number) => {
 
         navigate(`/wiki/type/${newTypeId}`);
         setCurrentPage(0);
@@ -64,7 +67,7 @@ function DocumentListPage() {
         
         <div>
             <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold">{typeLabel[typeId ?? ""] || "문서 목록"}</h1>
+                <h1 className="text-2xl font-bold">{currentTypeLabel || "문서 목록"}</h1>
                 {isLoggedIn && (
 
                     <button
@@ -85,12 +88,12 @@ function DocumentListPage() {
                         onClick={() => handleTypeChange(type.id)}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
 
-                            typeId === type.id
+                            numericTypeId === type.id
                                 ? "border-orange-500 text-orange-500"
                                 : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                         }`}
                     >
-                        {type.label}
+                        {type.description}
                     </button>
                 ))}
             </div>

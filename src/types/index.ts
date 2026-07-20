@@ -93,6 +93,13 @@ export interface DocumentTemplateRequest {
     displayOrder: number;
 }
 
+export interface DocumentType {
+
+    id: number;
+    name: string;
+    description: string;
+}
+
 // ===== 게시판 (Post/Comment) 관련 =====
 
 // PostResponse.java와 대응돼요

@@ -3,11 +3,15 @@ import api from "./axios";
 import type {
 
     Document,
+    DocumentType,
     DocumentCreateRequest,
     DocumentUpdateRequest,
     DocumentTemplate,
     PageResponse,
 } from "../types";
+
+export const getDocumentTypes = (): Promise<{ data: DocumentType[] }> =>
+    api.get<DocumentType[]>("/api/document-types");
 
 export const getDocumentsByType = (
 

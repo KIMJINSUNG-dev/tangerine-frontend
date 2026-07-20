@@ -1,16 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
-import { createDocument, getTemplate } from "../../api/documentApi";
-import type { DocumentCreateRequest } from "../../types";
+import { createDocument, getDocumentTypes, getTemplate } from "../../api/documentApi";
+import type { DocumentType, DocumentCreateRequest } from "../../types";
 
 function DocumentCreatePage() {
 
     const navigate = useNavigate();
-    const [typeId, setTypeId] = useState<number>(1);
+    const [typeId, setTypeId] = useState<number>(0);
     const [title, setTitle] = useState<string>("");
     const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
+
+    const { data: documentTypes = [] } = useQuery({
+
+        queryKey: ["documentTypes"],
+        queryFn: () => getDocumentTypes().then((res) => res.data),
+    });
+
+    useEffect(() => {
+
+        if (documentTypes.length > 0 && typeId === 0) {
+
+            setTypeId(documentTypes[0].id);
+        }
+    }, [documentTypes]);
 
     /**
      * [설명] 이전 .jsx 버전에서는 typeId가 바뀔 때마다 직접
@@ -27,6 +41,7 @@ function DocumentCreatePage() {
 
         queryKey: ["template", typeId],
         queryFn: () => getTemplate(typeId).then((res) => res.data),
+        enabled: typeId > 0,
     });
 
     const createMutation = useMutation({
@@ -86,9 +101,12 @@ function DocumentCreatePage() {
                         onChange={(e) => handleTypeChange(Number(e.target.value))}
                         className={inputClass}
                     >
-                        <option value={1}>수록곡 (SONG)</option>
-                        <option value={2}>작곡가 (COMPOSER)</option>
-                        <option value={3}>게임 타이틀 (GAME)</option>
+                        {documentTypes.map((type) => (
+
+                            <option key={type.id} value={type.id}>
+                                {type.description} ({type.name})
+                            </option>
+                        ))}
                     </select>
                 </div>
 

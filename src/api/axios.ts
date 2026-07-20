@@ -15,7 +15,9 @@ interface RetryableRequestConfig extends InternalAxiosRequestConfig {
 
 const api = axios.create({
     
-    baseURL: "http://localhost:8080",
+    baseURL: import.meta.env.DEV
+        ? "http://localhost:8080"
+        : "https://d2vmrs7ksqotm2.cloudfront.net",
     withCredentials: true,
 });
 
