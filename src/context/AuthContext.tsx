@@ -35,7 +35,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const [auth, setAuth] = useState<AuthState>(() => {
 
-        const stored = localStorage.getItem("AUTH_KEY");
+        const stored = localStorage.getItem(AUTH_KEY);
         if (stored) {
 
             return JSON.parse(stored) as AuthState;
