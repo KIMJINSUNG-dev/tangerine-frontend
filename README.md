@@ -25,5 +25,5 @@
 
 ## 배포
 
-- 빌드 결과물을 AWS S3에 업로드 후 CloudFront로 서빙
-- 배포 URL: https://dzhda13pro9ex.cloudfront.net
+- 빌드 결과물을 AWS S3에 업로드 후 CloudFront로 서빙 (2026.07 ~ 2026.10 운영, 현재 종료)
+- 시연 영상: https://youtu.be/ptdSzMcWCds
